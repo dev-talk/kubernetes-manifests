@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: flarum
+  labels:
+    app: flarum
+    component: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flarum
+      component: db
+  template:
+    metadata:
+      labels:
+        app: flarum
+        component: db
+    spec:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: "mariadb"
+        image: bitnami/mariadb:10.1.34-debian-9
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: flarum
+              key: mariadb-root-password
+        - name: MARIADB_USER
+          value: flarum
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: flarum
+              key: mariadb-password
+        - name: MARIADB_DATABASE
+          value: flarum
+        ports:
+        - name: mysql
+          containerPort: 3306
+        livenessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        volumeMounts:
+        - name: data
+          mountPath: /bitnami/mariadb
+        # - name: custom-init-scripts
+        #   mountPath: /docker-entrypoint-initdb.d
+        - name: config
+          mountPath: /opt/bitnami/mariadb/conf/my.cnf
+          subPath: my.cnf
+      - name: metrics
+        image: prom/mysqld-exporter:v0.10.0
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: flarum
+              key: mariadb-root-password
+        command: [ 'sh', '-c', 'DATA_SOURCE_NAME="root:$MARIADB_ROOT_PASSWORD@(localhost:3306)/" /bin/mysqld_exporter' ]
+        ports:
+        - name: metrics
+          containerPort: 9104
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: metrics
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: metrics
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+      volumes:
+        - name: config
+          configMap:
+            name: mariadb
+        - name: "data"
+          hostPath:
+            path: /mnt/flarum-postgresql
