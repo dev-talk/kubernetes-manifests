@@ -98,4 +98,4 @@ spec:
             name: mariadb
         - name: "data"
           hostPath:
-            path: /mnt/flarum-postgresql
+            path: /mnt/flarum-db

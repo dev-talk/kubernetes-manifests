@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flarum
+  namespace: flarum
+  labels:
+    app: flarum
+    component: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flarum
+      component: app
+  template:
+    metadata:
+      labels:
+        app: flarum
+        component: app
+    spec:
+      containers:
+      - name: flarum
+        image: mondedie/docker-flarum:0.1.0-beta.7.1-stable
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: FORUM_URL
+          value: https://dev-talk.io
+        - name: DB_USER
+          value: root
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: flarum
+              key: mariadb-root-password
+        - name: LOG_TO_STDOUT
+          value: "true"
+        - name: DEBUG
+          value: "true"
+        ports:
+        - name: http
+          containerPort: 8888
+        volumeMounts:
+        - name: assets
+          mountPath: /flarum/app/assets
+        - name: extensions
+          mountPath: /flarum/app/extensions
+      volumes:
+      - name: assets
+        hostPath:
+          path: /mnt/flarum-assets
+      - name: extensions
+        hostPath:
+          path: /mnt/flarum-extensions
