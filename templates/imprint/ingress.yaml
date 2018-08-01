@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: imprint
+  namespace: imprint
+  labels:
+    app: imprint
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: imprint.play-net.org
+    http:
+      paths:
+      - backend:
+          serviceName: frontend
+          servicePort: 80
+  - host: imprint.dev-talk.io
+    http:
+      paths:
+      - backend:
+          serviceName: frontend
+          servicePort: 80
