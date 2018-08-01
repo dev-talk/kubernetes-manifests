@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: devhub
+  namespace: devhub
+  labels:
+    app: devhub
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: devhub.play-net.org
+    http:
+      paths:
+      - backend:
+          serviceName: frontend
+          servicePort: 80
+      - backend:
+          serviceName: api
+          servicePort: 80
+        path: /api
+  - host: hub.play-net.org
+    http:
+      paths:
+      - backend:
+          serviceName: frontend
+          servicePort: 80
+      - backend:
+          serviceName: api
+          servicePort: 80
+        path: /api
+  - host: hub.dev-talk.io
+    http:
+      paths:
+      - backend:
+          serviceName: frontend
+          servicePort: 80
+      - backend:
+          serviceName: api
+          servicePort: 80
+        path: /api

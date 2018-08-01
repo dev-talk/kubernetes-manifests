@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: api
+  namespace: devhub
+  labels:
+    app: devhub
+    component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devhub
+      component: api
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: devhub
+        component: api
+    spec:
+      containers:
+      - name: api
+        image: quay.io/playnet/devhub-backend:latest
+        imagePullPolicy: Always
+        env:
+        - name: DEBUG
+          value: "true"
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 250m
+            memory: 250Mi
+          requests:
+            cpu: 250m
+            memory: 250Mi
+        
