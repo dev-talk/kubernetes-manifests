@@ -15,6 +15,18 @@ spec:
       - backend:
           serviceName: frontend
           servicePort: 80
+  - host: play-net.org
+    http:
+      paths:
+      - backend:
+          serviceName: frontend
+          servicePort: 80
+  - host: www.play-net.org
+    http:
+      paths:
+      - backend:
+          serviceName: frontend
+          servicePort: 80
   - host: imprint.dev-talk.io
     http:
       paths:

@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: votebot
+  namespace: votebot
+  labels:
+    app: votebot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: votebot
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: votebot
+    spec:
+      containers:
+      - name: app
+        image: quay.io/dev-talk/votebot:latest
+        imagePullPolicy: Always
+        env:
+        - name: DISCORD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: votebot
+              key: discord-token
+        resources:
+          limits:
+            cpu: 100m
+            memory: 260Mi
+          requests:
+            cpu: 100m
+            memory: 260Mi
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+      volumes:
+        - name: data
+          hostPath:
+            path: /mnt/votebot
+        
